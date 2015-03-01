@@ -1,5 +1,7 @@
 package com.example.oliveiras.findpic.Activities;
 
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.app.ActionBarActivity;
@@ -14,6 +16,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.example.oliveiras.findpic.Activities.Adapter.ImageResultsAdapter;
+import com.example.oliveiras.findpic.FilterDialog;
 import com.example.oliveiras.findpic.Models.ImageResult;
 import com.example.oliveiras.findpic.R;
 import com.loopj.android.http.AsyncHttpClient;
@@ -33,6 +36,8 @@ public class MainActivity extends ActionBarActivity {
     private GridView gvResults;
     private ArrayList<ImageResult> imageResults;
     private ImageResultsAdapter aImageResults;
+
+    private String searchExtraParams = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +65,9 @@ public class MainActivity extends ActionBarActivity {
     public void customLoadMoreDataFromApi(int offset) {
         String query = etQuery.getText().toString();
         AsyncHttpClient client = new AsyncHttpClient();
-        String searchUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8&start=" + offset;
-        client.get(searchUrl, new JsonHttpResponseHandler(){
+        String searchUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8&start=" + (8 * offset) + searchExtraParams;
+        Log.d("debug", searchUrl);
+        client.get(searchUrl, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 Log.d("DEBUG", response.toString());
@@ -75,7 +81,7 @@ public class MainActivity extends ActionBarActivity {
                     //this way, when updating the adapter, it already modifies the data inside the array
                     aImageResults.addAll(ImageResult.fromJSONArray(imageResultsJson));
 
-                }catch (JSONException e) {
+                } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
@@ -114,7 +120,7 @@ public class MainActivity extends ActionBarActivity {
     public void onImageSearch(View v){
         String query = etQuery.getText().toString();
         AsyncHttpClient client = new AsyncHttpClient();
-        String searchUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8";
+        String searchUrl = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=" + query + "&rsz=8" + searchExtraParams;
         client.get(searchUrl, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -144,10 +150,73 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.filters) {
+            //here I will launch the dialog
+            showFiltersDialog();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showFiltersDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        FilterDialog newFragment = new FilterDialog();
+        newFragment.show(ft, "dialog");
+    }
+
+    private final static String[] API_COLOR_PARAMS = new String[] {
+            null,
+            "imgcolor=black",
+            "imgcolor=blue",
+            "imgcolor=brown",
+            "imgcolor=gray",
+            "imgcolor=green",
+            "imgcolor=orange",
+            "imgcolor=pink",
+            "imgcolor=purple",
+            "imgcolor=red",
+            "imgcolor=teal",
+            "imgcolor=white",
+            "imgcolor=yellow"
+    };
+
+    private final static String[] API_SIZE_PARAMS = new String[] {
+            null,
+            "imgsz=small",
+            "imgsz=medium",
+            "imgsz=large",
+            "imgsz=xlarge"
+    };
+
+    private final static String[] API_TYPE_PARAMS = new String[] {
+            null,
+            "imgtype=face",
+            "imgtype=photo",
+            "imgtype=clipart",
+            "imgtype=lineart"
+    };
+
+
+    // Called from FilterDialog when user confirms selection of filters
+    public void onParametersChanged(int color, int size, int type) {
+        searchExtraParams = "&";
+        if (color > 0) {
+            searchExtraParams += API_COLOR_PARAMS[color] + "&";
+        }
+        if (size > 0) {
+            searchExtraParams += API_SIZE_PARAMS[size] + "&";
+        }
+        if (type > 0) {
+            searchExtraParams += API_TYPE_PARAMS[type] + "&";
+        }
+
+        searchExtraParams = searchExtraParams.substring(0, searchExtraParams.length() - 1);
+        onImageSearch(null);
     }
 }

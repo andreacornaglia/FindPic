@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="primary" type="color">#FF85CCBB</item>
+    <item name="secondary" type="color">#FF84B2A7</item>
+    <item name="accent" type="color">#FF85CCBB</item>
+    <item name="button" type="color">#FFAD76B2</item>
+    <item name="button_highlight" type="color">#ffFAC0FF</item>
+    <item name="background" type="color">#ffFFECB3</item>
+    <item name="listitem_highlight" type="color">#ffFFF0CC</item>
+    <item name="listitem" type="color">#ffFFECB3</item>
+
+    <integer-array name="androidcolors">
+        <item>@color/primary</item>
+        <item>@color/secondary</item>
+        <item>@color/accent</item>
+        <item>@color/button</item>
+        <item>@color/background</item>
+        <item>@color/listitem</item>
+        <item>@color/listitem_highlight</item>
+    </integer-array>
+
+</resources>
